@@ -1,0 +1,475 @@
+#-----------------------------------------------------
+#                 CONFIGURAÇÕES
+#-----------------------------------------------------
+.SETUP
+# ----- Limpa Displays
+LDI R0   $0      # Reg[0] = 0
+STA @288 R0      # HEX0   = 0
+STA @289 R0      # HEX1   = 0
+STA @290 R0      # HEX2   = 0
+STA @291 R0      # HEX3   = 0
+STA @292 R0      # HEX4   = 0
+STA @293 R0      # HEX5   = 0
+
+# ----- Apaga Leds
+LDI R0   $0      # Reg[0]  = 0
+STA @256 R0      # LEDR0-7 = 0
+STA @257 R0      # LEDR8   = 0
+STA @258 R0      # LEDR9   = 0
+
+# ----- Limpa FlipFlops Base de tempo
+STA @508 R0 
+STA @509 R0 
+
+# ----- Salva Constantes
+# Endereços de 0 a 9
+LDI R0 $0
+STA @0 R0        # MEM[0] = 0 (Constante)
+
+LDI R0 $1
+STA @1 R0        # MEM[1] = 1 (Constante)
+
+LDI R0 $2
+STA @2 R0        # MEM[2] = 2 (Constante)
+
+LDI R0 $4
+STA @4 R0        # MEM[4] = 4 (Constante)
+
+LDI R0 $5
+STA @5 R0        # MEM[5] = 5 (Constante)
+
+LDI R0 $9
+STA @9 R0        # MEM[9] = 9 (Constante)
+
+# ----- Valores , segundo , minuto e hora 
+# Endereços de 10 a 19
+# Setado com valores padrões de inicio
+
+LDI R0 $0        
+STA @10 R0       # Segundos - UNIDADE 
+STA @11 R0       # Segundos - DEZENA  
+STA @12 R0       # Minuto   - UNIDADE 
+STA @13 R0       # Minuto   - DEZENA 
+STA @14 R0       # Hora     - UNIDADE 
+STA @15 R0       # Hora     - DEZENA
+
+# ----- Limpa Registradores
+LDI R0 $0       # GERAL
+LDI R1 $0       # Segundos - UNIDADE
+LDI R2 $0       # Segundos - DEZENA
+LDI R3 $0       # Minuto   - UNIDADE
+LDI R4 $0       # Minuto   - DEZENA
+LDI R5 $0       # Hora     - UNIDADE
+LDI R6 $0       # Hora     - DEZENA
+LDI R7 $0       # GERAL
+
+JMP .MAIN
+NOP
+
+# --------- LIMPA DISPLAYS | REGISTRADORES | MEMORIA -------- --
+.LIMPA
+# ----- Limpa Displays
+LDI R0   $0      # Reg[0] = 0
+STA @288 R0      # HEX0   = 0
+STA @289 R0      # HEX1   = 0
+STA @290 R0      # HEX2   = 0
+STA @291 R0      # HEX3   = 0
+STA @292 R0      # HEX4   = 0
+STA @293 R0      # HEX5   = 0
+
+# ---- Registradores segundo , minuto , hora
+
+LDI R1 $0       # Segundos - UNIDADE
+LDI R2 $0       # Segundos - DEZENA
+LDI R3 $0       # Minuto   - UNIDADE
+LDI R4 $0       # Minuto   - DEZENA
+LDI R5 $0       # Hora     - UNIDADE
+LDI R6 $0       # Hora     - DEZENA
+
+# ----- Valores da memoria que guardam segundo , minuto e hora 
+
+LDI R0 $0        
+STA @10 R0       # Segundos - UNIDADE 
+STA @11 R0       # Segundos - DEZENA  
+STA @12 R0       # Minuto   - UNIDADE 
+STA @13 R0       # Minuto   - DEZENA 
+STA @14 R0       # Hora     - UNIDADE 
+STA @15 R0       # Hora     - DEZENA
+
+# ----- Apaga Leds
+LDI R0   $0      # Reg[0]  = 0
+STA @256 R0      # LEDR0-7 = 0
+STA @257 R0      # LEDR8   = 0
+STA @258 R0      # LEDR9   = 0
+
+JMP .MAIN
+NOP
+
+# --------- LIMPA para configuração ---------
+.LIMPA_SET_HORARIO
+# ----- Limpa Displays
+LDI R0   $0      # Reg[0] = 0
+STA @288 R0      # HEX0   = 0
+STA @289 R0      # HEX1   = 0
+STA @290 R0      # HEX2   = 0
+STA @291 R0      # HEX3   = 0
+STA @292 R0      # HEX4   = 0
+STA @293 R0      # HEX5   = 0
+
+# ---- Registradores segundo , minuto , hora
+
+LDI R1 $0       # Segundos - UNIDADE
+LDI R2 $0       # Segundos - DEZENA
+LDI R3 $0       # Minuto   - UNIDADE
+LDI R4 $0       # Minuto   - DEZENA
+LDI R5 $0       # Hora     - UNIDADE
+LDI R6 $0       # Hora     - DEZENA
+
+JMP .SET_UNIDADE_SEGUNDO
+NOP
+
+#-----------------------------------------------------
+#                INCREMENTA RELÓGIO
+#-----------------------------------------------------
+# ---------------- CONTA SEGUNDOS  ---------------- --
+.CONTA_SEGUNDOS
+# ---- UNIDADE - limitada ao número 9
+.SHOW_UNIDADE_S
+
+LDA R1 @10      # R1 = MEM[10]  ---> unidade segundo
+CEQ R1 @9       # Verifica se segundo-unidade = 9
+JEQ .SHOW_DEZENA_S
+NOP
+
+LDA R1  @10     # R1 = MEM[10]  ---> unidade segundo
+SOMA R1 @1      # R1 = R1 + 1   ---> Registrador R1 Contador  dos Segundos - UNIDADE
+STA @288 R1     # HEX0 = R1
+STA @10  R1
+RET
+NOP
+
+# ---- DEZENA - limitada ao número 5
+.SHOW_DEZENA_S
+# Limpa segundo-unidade
+LDI R1   $0
+STA @10  R1     # R1 = MEM[10] = 0
+STA @288 R1     # HEX0 = 0
+
+LDA R2 @11      # R2 = MEM[11]  ---> dezena segundo
+CEQ R2 @5
+JEQ .CONTA_MINUTOS
+
+LDA R2 @11      # R2 = MEM[11]  ---> dezena segundo
+SOMA R2 @1      # R2 = R2 + 1   ---> Registrador R2 Contador  dos Segundos - DEZENA
+STA @289 R2     # HEX1 = R2
+STA @11  R2
+RET
+NOP
+
+# ----------------- CONTA MINUTOS  ---------------- --
+.CONTA_MINUTOS
+# Limpa segundo-dezena
+LDI R2   $0
+STA @11  R2
+STA @289 R2     # HEX1 = 0
+
+# ---- UNIDADE - limitada ao número 9
+.SHOW_UNIDADE_M
+
+LDA R3 @12      # R3 = MEM[12]  ---> unidade minuto
+CEQ R3 @9       # Verifica se minuto-unidade = 9
+JEQ .SHOW_DEZENA_M
+NOP
+
+LDA R3 @12      # R3 = MEM[12]  ---> unidade minuto
+SOMA R3 @1      # R3 = R3 + 1   ---> Registrador R3 Contador  dos Minuto - UNIDADE
+STA @290 R3     # HEX2 = R3
+STA @12  R3
+RET
+NOP
+
+# ---- DEZENA - limitada ao número 5
+.SHOW_DEZENA_M
+# Limpa unidade-minuto
+LDI R3   $0
+STA @12  R3
+STA @290 R3     # HEX2 = 0
+
+LDA R4 @13      # R4 = MEM[13]  ---> dezena minuto
+CEQ R4 @5       # Verifica se minuto-dezena = 5
+JEQ .CONTA_HORAS
+NOP
+
+LDA R4 @13      # R4 = MEM[13]  ---> dezena minuto
+SOMA R4 @1      # R4 = R4 + 1   ---> Registrador R4 Contador  dos Minuto - Dezena
+STA @291 R4     # HEX3 = R4
+STA @13  R4
+RET
+NOP
+
+# ------------------- CONTA HORAS  ---------------- --
+.CONTA_HORAS
+# Limpa hora-unidade
+LDI R4   $0
+STA @13  R4
+STA @291 R4     # HEX3 = 0
+
+# ---- UNIDADE - limitada ao número 9 ou 4/2 (24 horas | 12horas)
+.SHOW_UNIDADE_H
+LDA R5 @14      # R5 = MEM[14]  ---> unidade hora
+CEQ R5 @9       # Verifica se hora-unidade = 9  
+JEQ .SHOW_DEZENA_H
+NOP
+
+LDA R5 @14      # R5 = MEM[14]  ---> unidade hora
+SOMA R5 @1      # R5 = R5 + 1   ---> Registrador R5 Contador  dos Hora - Unidade
+STA @292 R5     # HEX4 = R5
+STA @14  R5
+JMP .VERIFICA_HORA
+NOP
+
+# ---- DEZENA - limitada a 2|1 a depender da configuração
+.SHOW_DEZENA_H
+# Limpa hora-unidade
+LDI R5   $0
+STA @14  R5
+STA @292 R5     # HEX4 = 0
+
+LDA R6 @15      # R6 = MEM[15]  ---> dezena hora
+CEQ R6 @2       # Verifica se hora-dezena = 2 
+JEQ .LIMPA
+NOP
+
+LDA R6 @15      # R6 = MEM[15]  ---> dezena hora
+SOMA R6 @1      # R6 = R6 + 1   ---> Registrador R6 Contador  dos Hora - Unidade
+STA @293 R6     # HEX5 = R6
+STA @15  R6
+JMP .VERIFICA_HORA
+NOP
+
+# ----------------- VERIFICA HORA ----------------- --
+.VERIFICA_HORA
+# ------ verifica unidade-hora
+.UNIDADE
+LDA R5 @14 
+CEQ R5 @4       # Verifica se hora-unidade = 4
+JEQ .DEZENA
+NOP
+RET
+NOP
+
+# ------ verifica dezena-hora
+.DEZENA
+LDA R6 @15 
+CEQ R6 @2       # Verifica se hora-dezena = 2
+JEQ .LIMPA
+NOP
+RET
+NOP
+
+#-----------------------------------------------------
+#            CONFIGURA HORARIO ATUAL
+#-----------------------------------------------------
+.SET_HORARIO
+
+# Caso chave SW8 ativa
+LDA R7 @321                # SW8
+CEQ R7 @1
+JEQ .INIT_CONFIG  # Set Unidade-segundos
+NOP
+JMP .SET_END               # Vai pro fim da configuração
+NOP
+
+# ------- Inicia Configurações
+.INIT_CONFIG
+
+LDI R7   $1 
+STA @257 R7                # LEDR8 : ativo - indicativo de configuração
+
+# ------- LIMPA
+JMP .LIMPA_SET_HORARIO
+NOP
+
+# ------- Configura Unidade-Segundos
+.SET_UNIDADE_SEGUNDO
+
+STA @511                   # Endereco 511 : Limpa Flag FlipFlop KEY0
+
+LDI R7   $1 
+STA @256 R7                # LEDR0 : Configura unidade-segundo
+
+# Salva SW0-SW7 em config Unidade-Segundo
+LDA R1 @320      # R1 = SW0-SW7 
+STA @10  R1      # Segundos - UNIDADE 
+STA @288 R1      # HEX0
+
+# Verifica KEY0
+LDA R7 @352      # KEY0
+OP_AND R7 @1     # Limpa valores lixo
+CEQ R7 $1
+JEQ .SET_DEZENA_SEGUNDO
+NOP
+
+JMP .SET_UNIDADE_SEGUNDO
+NOP
+
+# ------- Configura Dezena-Segundos
+.SET_DEZENA_SEGUNDO
+
+STA @511         # Endereco 511 : Limpa Flag FlipFlop KEY0
+
+LDI R7   $2 
+STA @256 R7      # LEDR1 : Configura dezena-segundo
+
+# Salva SW0-SW7 em config Dezena-segundo
+LDA R2 @320      # R2 = SW0-SW7 
+STA @11  R2      # Segundos - DEZENA 
+STA @289 R2      # HEX1
+
+# Verifica KEY0
+LDA R7 @352      # KEY0
+OP_AND R7 @1     # Limpa valores lixo
+CEQ R7 @1
+JEQ .SET_UNIDADE_MINUTO
+NOP
+
+JMP .SET_DEZENA_SEGUNDO
+NOP
+
+# ------- Configura Unidade-Minuto
+.SET_UNIDADE_MINUTO
+
+STA @511         # Endereco 511 : Limpa Flag FlipFlop KEY0
+
+LDI R7   $4 
+STA @256 R7      # LEDR2 : Configura unidade-minuto
+
+# Salva SW0-SW7 em config Unidade-Minuto
+LDA R3 @320      # R3 = SW0-SW7 
+STA @12  R3      # Unidade - MINUTO 
+STA @290 R3      # HEX2
+
+# Verifica KEY0
+LDA R7 @352      # KEY0
+OP_AND R7 @1     # Limpa valores lixo
+CEQ R7 @1
+JEQ .SET_DEZENA_MINUTO
+NOP
+
+JMP .SET_UNIDADE_MINUTO
+NOP
+
+# ------- Configura Dezena-Minuto
+.SET_DEZENA_MINUTO
+
+STA @511         # Endereco 511 : Limpa Flag FlipFlop KEY0
+
+LDI R7   $8 
+STA @256 R7      # LEDR3 : Configura dezena-minuto
+
+# Salva SW0-SW7 em config Minuto-Dezena
+LDA R4 @320      # R4 = SW0-SW7 
+STA @13  R4      # Minuto - DEZENA 
+STA @291 R4      # HEX3
+
+# Verifica KEY0
+LDA R7 @352      # KEY0
+OP_AND R7 @1     # Limpa valores lixo
+CEQ R7 @1
+JEQ .SET_UNIDADE_HORA
+NOP
+
+JMP .SET_DEZENA_MINUTO
+NOP
+
+# ------- Configura Unidade-Hora
+.SET_UNIDADE_HORA
+
+STA @511         # Endereco 511 : Limpa Flag FlipFlop KEY0
+
+LDI R7   $16 
+STA @256 R7      # LEDR4 : Configura unidade-HORA
+
+# Salva SW0-SW7 em config Minuto-Dezena
+LDA R5 @320      # R5 = SW0-SW7 
+STA @14  R5      # Hora - UNIDADE 
+STA @292 R5      # HEX4
+
+# Verifica KEY0
+LDA R7 @352      # KEY0
+OP_AND R7 @1     # Limpa valores lixo
+CEQ R7 @1
+JEQ .SET_DEZENA_HORA
+NOP
+
+JMP .SET_UNIDADE_HORA
+NOP
+
+# ------- Configura Dezena-Hora
+.SET_DEZENA_HORA
+
+STA @511         # Endereco 511 : Limpa Flag FlipFlop KEY0
+
+LDI R7   $32
+STA @256 R7      # LEDR5 : Configura unidade-minuto
+
+# Salva SW0-SW7 em config Hora-Dezena
+LDA R6 @320      # R6 = SW0-SW7 
+STA @15  R6      # Hora - DEZENA 
+STA @293 R6      # HEX5
+
+# Verifica KEY0
+LDA R7 @352      # KEY0
+OP_AND R7 @1     # Limpa valores lixo
+CEQ R7 @1
+JEQ .LIMPA_SET
+NOP
+
+JMP .SET_DEZENA_HORA
+NOP
+
+# ------- Limpa Displays e LEDS
+.LIMPA_SET
+# ----- Apaga Leds
+LDI R0   $0      # Reg[0]  = 0
+STA @256 R0      # LEDR0-7 = 0
+STA @257 R0      # LEDR8   = 0
+STA @258 R0      # LEDR9   = 0
+
+# ------- Fim da configuração
+.SET_END
+RET
+NOP
+
+#-----------------------------------------------------
+#              BASE DE TEMPO
+#-----------------------------------------------------
+
+.BASE_TEMPO_SEGUNDOS
+LDA R0 @357       # Ler endereço da Base de tempo
+OP_AND R0 @1      # Limpa valores lixo
+
+CEQ R0 @1         # Se Reg0 = 1 -> Pula para subrotina
+STA @509 R0       # MEM[509] = 0  ---> Limpa FlipFlop 
+
+JEQ .CONTA_SEGUNDOS 
+NOP
+
+RET
+NOP
+
+#-----------------------------------------------------
+#                 ROTINA PRINCIPAL
+#-----------------------------------------------------
+.MAIN
+
+# Subrotina de Base de Tempo
+JSR .BASE_TEMPO_SEGUNDOS
+NOP
+
+# Subrotina de Configuração de Horario        
+JSR .SET_HORARIO
+NOP
+
+JMP .MAIN
+NOP
